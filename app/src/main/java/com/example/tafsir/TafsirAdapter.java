@@ -36,16 +36,6 @@ public class TafsirAdapter extends RecyclerView.Adapter<TafsirAdapter.ViewHolder
         final int arrayPosition = position;
         final String textPosition = dataTafsir.get(position).getText();
         holder.tvText.setText(textPosition);
-
-//        holder.tvText.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(v.getContext(), "pilih juz " + arrayPosition, Toast.LENGTH_SHORT).show();
-//                Intent i = new Intent(context, Tafseer2Activity.class);
-//                i.putExtra("juz", dataTafsir.get(arrayPosition).getJuz());
-//                context.startActivity(i);
-//            }
-//        });
     }
 
     @Override

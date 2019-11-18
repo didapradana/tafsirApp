@@ -1,5 +1,6 @@
 package com.example.tafsir;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -27,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     DataHelper dbHelper;
     Cursor cursor, cursor2;
     RecyclerView recyclerView;
+    LinearLayoutManager linearLayoutManager;
+    ArrayList<DataTafsirModel> dataTafsir = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +37,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         dbHelper = new DataHelper(getApplicationContext());
 
+        linearLayoutManager = new LinearLayoutManager(
+                this,
+                LinearLayoutManager.HORIZONTAL,
+                false
+        );
+
         tampil();
     }
     public void tampil(){
-        ArrayList<DataTafsirModel> dataTafsir = new ArrayList<>();
         DataTafsirModel dt,dt2;
         TafsirAdapter tafsirAdapter;
         SnapHelper snapHelper = new PagerSnapHelper();
@@ -72,13 +80,10 @@ public class MainActivity extends AppCompatActivity {
         tafsirAdapter = new TafsirAdapter(this, R.layout.text_item, dataTafsir);
 
         recyclerView = findViewById(R.id.rvTafsir);
-        recyclerView.setLayoutManager(new LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false)
-        );
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(tafsirAdapter);
         snapHelper.attachToRecyclerView(recyclerView);
+        getItemPosition();
     }
 
     public int insertFromFile(Context context, int ResourceId) {
@@ -105,6 +110,30 @@ public class MainActivity extends AppCompatActivity {
 
         // returning number of inserted rows
         return result;
+    }
+
+    private void getItemPosition(){
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            int position;
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if(newState == RecyclerView.SCROLL_STATE_IDLE){
+                    Toast.makeText(getApplicationContext(), "" + position, Toast.LENGTH_SHORT).show();
+                    onSuraChanged(dataTafsir.get(position).getSura());
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                position = linearLayoutManager.findFirstVisibleItemPosition();
+            }
+        });
+    }
+
+    private void onSuraChanged(int numberSura){
     }
 }
 
