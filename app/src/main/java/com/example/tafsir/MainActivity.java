@@ -2,7 +2,9 @@ package com.example.tafsir;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 import android.content.Context;
 import android.content.Intent;
@@ -38,17 +40,20 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<DataTafsirModel> dataTafsir = new ArrayList<>();
         DataTafsirModel dt,dt2;
         TafsirAdapter tafsirAdapter;
+        SnapHelper snapHelper = new PagerSnapHelper();
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-//        cursor = db.rawQuery("SELECT text FROM ringkas_kemenag GROUP BY juz", null);
-        cursor = db.rawQuery("SELECT text FROM ringkas_kemenag", null);
+        cursor = db.rawQuery("SELECT sura, aya, juz, text FROM ringkas_kemenag", null);
         cursor2 = db.rawQuery("SELECT text FROM tahlili GROUP BY juz", null);
         Log.d("info", "Masook sini!");
         Log.d("info Cursor", String.valueOf(cursor.getCount()));
         if(cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 dt = new DataTafsirModel();
-                dt.setText(cursor.getString(0));
+                dt.setSura(cursor.getInt(0));
+                dt.setAya(cursor.getInt(1));
+                dt.setJuz(cursor.getInt(2));
+                dt.setText(cursor.getString(3));
                 dataTafsir.add(dt);
             }
 
@@ -67,8 +72,13 @@ public class MainActivity extends AppCompatActivity {
         tafsirAdapter = new TafsirAdapter(this, R.layout.text_item, dataTafsir);
 
         recyclerView = findViewById(R.id.rvTafsir);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.HORIZONTAL,
+                false)
+        );
         recyclerView.setAdapter(tafsirAdapter);
+        snapHelper.attachToRecyclerView(recyclerView);
     }
 
     public int insertFromFile(Context context, int ResourceId) {
