@@ -33,9 +33,11 @@ public class TafsirAdapter extends RecyclerView.Adapter<TafsirAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(final TafsirAdapter.ViewHolder holder, int position) {
-        final int arrayPosition = position;
-        final String textPosition = dataTafsir.get(position).getText();
+        int arrayPosition = position;
+        String textPosition = dataTafsir.get(position).getText();
+        int ayatPosition = dataTafsir.get(position).getAya();
         holder.tvText.setText(textPosition);
+        holder.tvAya.setText("Ayat " + ayatPosition);
     }
 
     @Override
@@ -48,6 +50,7 @@ public class TafsirAdapter extends RecyclerView.Adapter<TafsirAdapter.ViewHolder
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         public TextView tvText;
+        public TextView tvAya;
 
         // We also create a constructor that accepts the entire item row
         // and does the view lookups to find each subview
@@ -57,11 +60,10 @@ public class TafsirAdapter extends RecyclerView.Adapter<TafsirAdapter.ViewHolder
             super(itemView);
 
             tvText = itemView.findViewById(R.id.text_list);
+            tvAya = itemView.findViewById(R.id.tv_ayat);
         }
 
         @Override
-        public void onClick(View v) {
-            Log.d("onclick", "onClick " + getLayoutPosition() + " " + tvText.getText());
-        }
+        public void onClick(View v) { }
     }
 }
