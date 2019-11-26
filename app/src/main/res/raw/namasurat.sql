@@ -1,37 +1,3 @@
-/*
- Navicat Premium Data Transfer
-
- Source Server         : kemenag_lajnah
- Source Server Type    : SQLite
- Source Server Version : 3030001
- Source Schema         : main
-
- Target Server Type    : SQLite
- Target Server Version : 3030001
- File Encoding         : 65001
-
- Date: 22/11/2019 08:41:43
-*/
-
-PRAGMA foreign_keys = false;
-
--- ----------------------------
--- Table structure for namasurat
--- ----------------------------
-DROP TABLE IF EXISTS "namasurat";
-CREATE TABLE "namasurat" (
-  "id" integer,
-  "namalatin" text,
-  "jumlahayat" integer,
-  "namaarab" text,
-  "kategory" text,
-  "terjemah" text,
-  "posisi" integer
-);
-
--- ----------------------------
--- Records of namasurat
--- ----------------------------
 INSERT INTO "namasurat" VALUES (1, 'Al-Fatihah', 7, ' الفاتحة', 'Makkiyah', 'Pembukaan', 0);
 INSERT INTO "namasurat" VALUES (2, 'Al-Baqarah', 286, ' البقرة', 'Madaniyah', 'Sapi', 7);
 INSERT INTO "namasurat" VALUES (3, 'Ali ''Imran', 200, ' اٰل عمران', 'Madaniyah', 'Keluarga Imran', 293);

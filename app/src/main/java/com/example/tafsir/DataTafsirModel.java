@@ -3,13 +3,13 @@ package com.example.tafsir;
 import java.util.ArrayList;
 
 public class DataTafsirModel {
-    private int id,aya,sura,juz;
-    private String text;
+    private int id,aya,juz;
+    private String sura,text;
 
     public DataTafsirModel() {
     }
 
-    public DataTafsirModel(int id, int aya, int sura, int juz, String text) {
+    public DataTafsirModel(int id, int aya, String sura, int juz, String text) {
         this.id = id;
         this.aya = aya;
         this.sura = sura;
@@ -33,11 +33,11 @@ public class DataTafsirModel {
         this.aya = aya;
     }
 
-    public int getSura() {
+    public String getSura() {
         return sura;
     }
 
-    public void setSura(int sura) {
+    public void setSura(String sura) {
         this.sura = sura;
     }
 
