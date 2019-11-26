@@ -54,10 +54,22 @@ public class DataHelper extends SQLiteOpenHelper {
                 "  sura INT (3) NOT NULL DEFAULT '0',\n" +
                 "  aya INT (3) NOT NULL DEFAULT '0',\n" +
                 "  juz INT (3) NOT NULL DEFAULT '0',\n" +
-                "  text TEXT NOT NULL"+
+                "  text TEXT NOT NULL\n" +
                 ");";
         Log.d("Creating SQLite db", "onCreate" + sql3);
         sqLiteDatabase.execSQL(sql3);
+
+        String sql4 = "CREATE TABLE namasurat (\n" +
+                "  id INT,\n" +
+                "  namalatin TEXT,\n" +
+                "  jumlahayat INT,\n" +
+                "  namaarab TEXT,\n" +
+                "  kategory TEXT,\n" +
+                "  terjemah TEXT,\n" +
+                "  posisi INT\n" +
+                ");";
+        Log.d("Creating SQLite db", "onCreate" + sql4);
+        sqLiteDatabase.execSQL(sql4);
     }
 
     @Override

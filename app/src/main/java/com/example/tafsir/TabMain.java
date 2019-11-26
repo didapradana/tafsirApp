@@ -2,39 +2,62 @@ package com.example.tafsir;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.Inflater;
 
 public class TabMain extends AppCompatActivity {
+
     DataHelper dbHelper;
     Cursor cursor;
     RecyclerView recyclerViewTafsirTahili, recyclerViewTafsirWajiz;
     LinearLayoutManager linearLayoutManagerTafsirTahili, linearLayoutManagerTafsirWajiz;
-    int currentSura = 1;
+    AlertDialog.Builder dialog;
+    LayoutInflater inflater;
+    String currentSura = "";
+    TextView tvSuraTitle;
+    Button search_btn;
+    Spinner spinSurat, spinAyat;
 
     ArrayList<DataTafsirModel> dataTafsir = new ArrayList<>();
+//    ArrayList<String> surats = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tab_main);
 
+        tvSuraTitle = findViewById(R.id.tvSuraTitle);
+        search_btn = findViewById(R.id.button_search);
+        spinAyat = findViewById(R.id.spAyat);
+
         dbHelper = new DataHelper(getApplicationContext());
+        importDataToDatabase();
 
         linearLayoutManagerTafsirTahili = new LinearLayoutManager(
                 this,
@@ -48,10 +71,24 @@ public class TabMain extends AppCompatActivity {
                 false
         );
 
+        search_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                search();
+            }
+        });
+
         tabInit();
+        toolbarInit();
         tampilTafsirWajiz();
         tampilTafsirTahili();
+        tvSuraTitle.setText(dataTafsir.get(0).getSura());
         getItemPosition();
+    }
+
+    private void toolbarInit(){
+        Toolbar customToolbar = findViewById(R.id.custom_toolbar);
+        setSupportActionBar(customToolbar);
     }
 
     private void tabInit(){
@@ -73,26 +110,21 @@ public class TabMain extends AppCompatActivity {
         SnapHelper snapHelper = new PagerSnapHelper();
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        cursor = db.rawQuery("SELECT sura, aya, juz, text FROM ringkas_kemenag", null);
+        cursor = db.rawQuery("SELECT namalatin, aya, juz, text \n" +
+                "FROM tahlili\n" +
+                "JOIN namasurat ON namasurat.id = tahlili.sura", null);
         if(cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 dt = new DataTafsirModel();
-                dt.setSura(cursor.getInt(0));
+                dt.setSura(cursor.getString(0));
                 dt.setAya(cursor.getInt(1));
                 dt.setJuz(cursor.getInt(2));
                 dt.setText(cursor.getString(3));
                 dataTafsir.add(dt);
             }
 
-        } else {
-            insertFromFile(this, R.raw.trans);
-            int count = insertFromFile(this, R.raw.ringkas_kemenag);
-            int count2 = insertFromFile(this, R.raw.tahlili);
-
-            tampilTafsirTahili();
         }
 
-        Log.d("dataTafsir data", dataTafsir.get(0).getText());
         tafsirAdapter = new TafsirAdapter(this, R.layout.text_item, dataTafsir);
 
         recyclerViewTafsirTahili = findViewById(R.id.rvTafsirTahili);
@@ -107,26 +139,19 @@ public class TabMain extends AppCompatActivity {
         SnapHelper snapHelper = new PagerSnapHelper();
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        cursor = db.rawQuery("SELECT sura, aya, juz, text FROM ringkas_kemenag", null);
+        cursor = db.rawQuery("SELECT namalatin, aya, juz, text \n" +
+                "FROM ringkas_kemenag\n" +
+                "JOIN namasurat ON namasurat.id = ringkas_kemenag.sura", null);
         if(cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 dt = new DataTafsirModel();
-                dt.setSura(cursor.getInt(0));
+                dt.setSura(cursor.getString(0));
                 dt.setAya(cursor.getInt(1));
                 dt.setJuz(cursor.getInt(2));
                 dt.setText(cursor.getString(3));
                 dataTafsir.add(dt);
             }
-
-        } else {
-            insertFromFile(this, R.raw.trans);
-            int count = insertFromFile(this, R.raw.ringkas_kemenag);
-            int count2 = insertFromFile(this, R.raw.tahlili);
-
-            tampilTafsirWajiz();
         }
-
-        Log.d("dataTafsir data", dataTafsir.get(0).getText());
         tafsirAdapter = new TafsirAdapter(this, R.layout.text_item, dataTafsir);
 
         recyclerViewTafsirWajiz = findViewById(R.id.rvTafsirWajiz);
@@ -135,8 +160,7 @@ public class TabMain extends AppCompatActivity {
         snapHelper.attachToRecyclerView(recyclerViewTafsirWajiz);
     }
 
-
-    public int insertFromFile(Context context, int ResourceId) {
+    private int insertFromFile(Context context, int ResourceId) {
         // Reseting Counter
         int result = 0;
 
@@ -199,10 +223,93 @@ public class TabMain extends AppCompatActivity {
         });
     }
 
-    private void onSuraChanged(int numberSura){
-        if (this.currentSura != numberSura) {
-            Toast.makeText(this, "Anda di sura " + numberSura, Toast.LENGTH_SHORT).show();
-            this.currentSura = numberSura;
+    private void onSuraChanged(String suraTitle){
+        if (this.currentSura != suraTitle) {
+            tvSuraTitle.setText(suraTitle);
+            this.currentSura = suraTitle;
         }
+    }
+
+    public List<String> getAllSurats(){
+        List<String> listSurat = new ArrayList<String>();
+
+        String selectQuery = "SELECT * FROM namasurat";
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // Perulangan sejumlah data yang ada dan tambahkan ke list.
+        if (cursor.moveToFirst()) {
+            do {
+                listSurat.add(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+
+        // closing connection
+        cursor.close();
+        db.close();
+
+        // returning lables
+        return listSurat;
+    }
+
+    private void loadSurat(View v) {
+        List<String> surats = this.getAllSurats();
+
+        spinSurat = v.findViewById(R.id.spSurat);
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, surats);
+
+        // attaching data adapter to spinner
+        spinSurat.setAdapter(dataAdapter);
+    }
+
+    private void search(){
+        View dialogView;
+
+        dialog = new AlertDialog.Builder(this);
+        inflater = getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.search, null);
+        dialog.setView(dialogView);
+        dialog.setCancelable(true);
+        dialog.setTitle("Pilih surat dan ayat");
+
+        loadSurat(dialogView);
+
+        dialog.show();
+    } ;
+
+    private void importDataToDatabase(){
+        Cursor cursorRingkasKemenag, cursorTrans, cursorTahlili, cursorNamaSurat;
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        cursorRingkasKemenag = db.rawQuery("SELECT * FROM ringkas_kemenag" , null);
+        if(cursorRingkasKemenag.getCount() <= 0) {
+            int ringkasKemenagResult = insertFromFile(this, R.raw.ringkas_kemenag);
+
+            Log.d("info", "data yang ringkas_kemenag masook : " + ringkasKemenagResult );
+        } else { }
+
+        cursorTrans = db.rawQuery("SELECT * FROM trans" , null);
+        if(cursorTrans.getCount() <= 0) {
+            int transResult = insertFromFile(this, R.raw.trans);
+
+            Log.d("info", "data yang trans masook : " + transResult );
+        } else { }
+
+        cursorTahlili = db.rawQuery("SELECT * FROM tahlili" , null);
+        if(cursorTahlili.getCount() <= 0) {
+            int tahliliResult = insertFromFile(this, R.raw.tahlili);
+
+            Log.d("info", "data yang tahlili masook : " + tahliliResult );
+        } else { }
+
+        cursorNamaSurat = db.rawQuery("SELECT * FROM namasurat" , null);
+        if(cursorNamaSurat.getCount() <= 0) {
+            int namaSuratResult = insertFromFile(this, R.raw.namasurat);
+
+            Log.d("info", "data yang namasurat masook : " + namaSuratResult );
+        } else { }
     }
 }
