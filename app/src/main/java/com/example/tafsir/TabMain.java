@@ -9,14 +9,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -24,12 +25,13 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.tafsir.model.Surat;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Inflater;
 
 public class TabMain extends AppCompatActivity {
 
@@ -45,7 +47,7 @@ public class TabMain extends AppCompatActivity {
     Spinner spinSurat, spinAyat;
 
     ArrayList<DataTafsirModel> dataTafsir = new ArrayList<>();
-//    ArrayList<String> surats = new ArrayList<String>();
+    ArrayList<Surat> listDataSurat = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +84,7 @@ public class TabMain extends AppCompatActivity {
         toolbarInit();
         tampilTafsirWajiz();
         tampilTafsirTahili();
+        getSuratData();
         tvSuraTitle.setText(dataTafsir.get(0).getSura());
         getItemPosition();
     }
@@ -230,6 +233,29 @@ public class TabMain extends AppCompatActivity {
         }
     }
 
+    private void getSuratData(){
+
+        String selectQuery = "SELECT * FROM namasurat";
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // Perulangan sejumlah data yang ada dan tambahkan ke list.
+        if (cursor.moveToFirst()) {
+            do {
+                Surat surat = new Surat();
+                surat.setId(cursor.getInt(0));
+                surat.setNamalatin(cursor.getString(1));
+                surat.setJumlahayat(cursor.getInt(2));
+                surat.setNamaarab(cursor.getString(3));
+                surat.setKategory(cursor.getString(4));
+                surat.setTerjemah(cursor.getString(5));
+                surat.setPosisi(cursor.getInt(6));
+                listDataSurat.add(surat);
+            } while (cursor.moveToNext());
+        }
+    }
+
     public List<String> getAllSurats(){
         List<String> listSurat = new ArrayList<String>();
 
@@ -263,10 +289,37 @@ public class TabMain extends AppCompatActivity {
 
         // attaching data adapter to spinner
         spinSurat.setAdapter(dataAdapter);
+        loadAyat(v);
+    }
+
+    private void loadAyat(View v){
+        final View view_ = v;
+        spinSurat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinAyat = view_.findViewById(R.id.spAyat);
+                int jumlahAyat = listDataSurat.get(position).getJumlahayat();
+                ArrayList<String> ayat = new ArrayList<>();
+                for (int i = 1; i <= jumlahAyat; i++){
+                    ayat.add(String.valueOf(i));
+                }
+                ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(
+                        view.getContext(),
+                        android.R.layout.simple_spinner_item,
+                        ayat
+                );
+                spinAyat.setAdapter(dataAdapter);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void search(){
-        View dialogView;
+        final View dialogView;
 
         dialog = new AlertDialog.Builder(this);
         inflater = getLayoutInflater();
@@ -274,11 +327,38 @@ public class TabMain extends AppCompatActivity {
         dialog.setView(dialogView);
         dialog.setCancelable(true);
         dialog.setTitle("Pilih surat dan ayat");
+        dialog.setNegativeButton("Batal", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) { }
+        });
+        dialog.setPositiveButton("Cari", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Spinner spinSurat = dialogView.findViewById(R.id.spSurat);
+                Spinner spinAyat = dialogView.findViewById(R.id.spAyat);
+                int scrollPosition = 0;
+
+                for (Surat dataSurat : listDataSurat) {
+                    if(dataSurat.getNamalatin().equalsIgnoreCase(
+                            spinSurat.getSelectedItem().toString())){
+                        break;
+                    }
+                    scrollPosition += dataSurat.getJumlahayat();
+                }
+                recyclerViewTafsirTahili.scrollToPosition(
+                        scrollPosition + Integer.parseInt(spinAyat.getSelectedItem().toString()) - 1);
+                tvSuraTitle.setText(spinSurat.getSelectedItem().toString());
+            }
+        });
 
         loadSurat(dialogView);
 
         dialog.show();
-    } ;
+    }
+
+    private void goToTafsirByCari(){
+
+    }
 
     private void importDataToDatabase(){
         Cursor cursorRingkasKemenag, cursorTrans, cursorTahlili, cursorNamaSurat;
