@@ -85,8 +85,8 @@ public class TabMain extends AppCompatActivity {
         tampilTafsirWajiz();
         tampilTafsirTahili();
         getSuratData();
-        tvSuraTitle.setText(dataTafsir.get(0).getSura());
         getItemPosition();
+        jumpTo();
     }
 
     private void toolbarInit(){
@@ -198,6 +198,8 @@ public class TabMain extends AppCompatActivity {
 
                 if(newState == RecyclerView.SCROLL_STATE_IDLE){
                     onSuraChanged(dataTafsir.get(position).getSura());
+                    recyclerViewTafsirWajiz.scrollToPosition(position);
+                    setSessionPage(position);
                 }
             }
 
@@ -215,6 +217,8 @@ public class TabMain extends AppCompatActivity {
 
                 if(newState == RecyclerView.SCROLL_STATE_IDLE){
                     onSuraChanged(dataTafsir.get(position).getSura());
+                    recyclerViewTafsirTahili.scrollToPosition(position);
+                    setSessionPage(position);
                 }
             }
 
@@ -345,8 +349,11 @@ public class TabMain extends AppCompatActivity {
                     }
                     scrollPosition += dataSurat.getJumlahayat();
                 }
-                recyclerViewTafsirTahili.scrollToPosition(
-                        scrollPosition + Integer.parseInt(spinAyat.getSelectedItem().toString()) - 1);
+                int position = scrollPosition + Integer.parseInt(spinAyat.getSelectedItem().toString()) - 1;
+                recyclerViewTafsirTahili.scrollToPosition(position);
+                recyclerViewTafsirWajiz.scrollToPosition(position);
+                setSessionPage(position);
+
                 tvSuraTitle.setText(spinSurat.getSelectedItem().toString());
             }
         });
@@ -354,10 +361,6 @@ public class TabMain extends AppCompatActivity {
         loadSurat(dialogView);
 
         dialog.show();
-    }
-
-    private void goToTafsirByCari(){
-
     }
 
     private void importDataToDatabase(){
@@ -391,5 +394,22 @@ public class TabMain extends AppCompatActivity {
 
             Log.d("info", "data yang namasurat masook : " + namaSuratResult );
         } else { }
+    }
+
+    private void setSessionPage(int page){
+        Preferences pref = new Preferences(getApplicationContext());
+        pref.setPage(page);
+    }
+
+    private void jumpTo(){
+        Preferences pref = new Preferences(getApplicationContext());
+        int page = pref.getPage();
+        if (page != 0) {
+            tvSuraTitle.setText(dataTafsir.get(page).getSura());
+            recyclerViewTafsirTahili.scrollToPosition(page);
+            recyclerViewTafsirWajiz.scrollToPosition(page);
+        } else {
+            tvSuraTitle.setText(dataTafsir.get(0).getSura());
+        }
     }
 }
