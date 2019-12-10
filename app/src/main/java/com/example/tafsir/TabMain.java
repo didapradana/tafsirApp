@@ -16,6 +16,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -55,7 +58,6 @@ public class TabMain extends AppCompatActivity {
         setContentView(R.layout.activity_tab_main);
 
         tvSuraTitle = findViewById(R.id.tvSuraTitle);
-        search_btn = findViewById(R.id.button_search);
         spinAyat = findViewById(R.id.spAyat);
 
         dbHelper = new DataHelper(getApplicationContext());
@@ -73,13 +75,6 @@ public class TabMain extends AppCompatActivity {
                 false
         );
 
-        search_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                search();
-            }
-        });
-
         tabInit();
         toolbarInit();
         tampilTafsirWajiz();
@@ -87,6 +82,24 @@ public class TabMain extends AppCompatActivity {
         getSuratData();
         getItemPosition();
         jumpTo();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_items, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.search_menu_button:
+                search();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void toolbarInit(){

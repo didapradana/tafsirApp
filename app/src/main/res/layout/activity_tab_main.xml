@@ -10,24 +10,18 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/custom_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="80dp"
         android:background="?attr/colorPrimary"
-        android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:title=""
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
         <TextView
             android:id="@+id/tvSuraTitle"
-            android:layout_width="280dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="10dp"
             android:text="TextView"
             android:textSize="20dp" />
-        <Button
-            android:id="@+id/button_search"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="Search"/>
     </androidx.appcompat.widget.Toolbar>
 
 
