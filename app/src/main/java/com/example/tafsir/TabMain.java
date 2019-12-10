@@ -92,6 +92,7 @@ public class TabMain extends AppCompatActivity {
     private void toolbarInit(){
         Toolbar customToolbar = findViewById(R.id.custom_toolbar);
         setSupportActionBar(customToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
     private void tabInit(){
