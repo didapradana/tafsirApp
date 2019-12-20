@@ -82,6 +82,8 @@ public class TabMain extends AppCompatActivity {
                 LinearLayoutManager.HORIZONTAL,
                 false
         );
+        recyclerViewTafsirTahili = findViewById(R.id.rvTafsirTahili);
+        recyclerViewTafsirWajiz = findViewById(R.id.rvTafsirWajiz);
 
         tabInit();
         toolbarInit();
@@ -143,7 +145,6 @@ public class TabMain extends AppCompatActivity {
         tafsirWajizRepository.getAllWajizTafsir().observe(this, tafsirWajiz -> {
             NewTafsirAdapter newTafsirAdapter = new NewTafsirAdapter(this, R.layout.text_item, tafsirWajiz);
 
-            recyclerViewTafsirTahili = findViewById(R.id.rvTafsirTahili);
             recyclerViewTafsirTahili.setLayoutManager(linearLayoutManagerTafsirTahili);
             recyclerViewTafsirTahili.setAdapter(newTafsirAdapter);
             snapHelper.attachToRecyclerView(recyclerViewTafsirTahili);
@@ -159,7 +160,6 @@ public class TabMain extends AppCompatActivity {
         tafsirWajizRepository.getAllWajizTafsir().observe(this, tafsirWajiz -> {
             NewTafsirAdapter newTafsirAdapter = new NewTafsirAdapter(this, R.layout.text_item, tafsirWajiz);
 
-            recyclerViewTafsirWajiz = findViewById(R.id.rvTafsirWajiz);
             recyclerViewTafsirWajiz.setLayoutManager(linearLayoutManagerTafsirWajiz);
             recyclerViewTafsirWajiz.setAdapter(newTafsirAdapter);
             snapHelper.attachToRecyclerView(recyclerViewTafsirWajiz);
@@ -193,6 +193,7 @@ public class TabMain extends AppCompatActivity {
     }
 
     private void getItemPosition(List<TafsirWajizModel> dataTafsirWajiz){
+        Log.d("DAD", "getItemPosition: " + dataTafsirWajiz.size());
         recyclerViewTafsirTahili.addOnScrollListener(new RecyclerView.OnScrollListener() {
             int position;
             @Override
@@ -245,29 +246,6 @@ public class TabMain extends AppCompatActivity {
         suratTafsirRepository.getAllSurat().observe(this, surats -> {
             listSuratTafsir.addAll(surats);
         });
-    }
-
-    public List<String> getAllSurats(){
-        List<String> listSurat = new ArrayList<String>();
-
-        String selectQuery = "SELECT * FROM namasurat";
-
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        // Perulangan sejumlah data yang ada dan tambahkan ke list.
-        if (cursor.moveToFirst()) {
-            do {
-                listSurat.add(cursor.getString(1));
-            } while (cursor.moveToNext());
-        }
-
-        // closing connection
-        cursor.close();
-        db.close();
-
-        // returning lables
-        return listSurat;
     }
 
     private void loadSurat(View v) {
@@ -400,7 +378,7 @@ public class TabMain extends AppCompatActivity {
     private void jumpTo(List<TafsirWajizModel> dataTafsirWajiz){
         Preferences pref = new Preferences(getApplicationContext());
         int page = pref.getPage();
-        Log.d("DEBUG", "jumpTo: " + page);
+        Log.d("DEBUG", "isi data: " + dataTafsirWajiz.size());
         if (page != 0) {
             tvSuraTitle.setText(dataTafsirWajiz.get(page).getSura());
             recyclerViewTafsirTahili.scrollToPosition(page);
